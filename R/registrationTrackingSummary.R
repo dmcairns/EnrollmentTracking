@@ -41,12 +41,13 @@ registrationTrackingSummaryUI <- function(id, label = "Registration Tracking") {
 #' @param id the id
 #' @param inTrackingData the tracking data
 #' @param ppData the ppData
+#' @param semester.codes the semester codes
 #'
 #' @return
 #' @export
 #'
 #' @examples
-registrationTrackingSummaryServer <- function(id, inTrackingData, ppData) {
+registrationTrackingSummaryServer <- function(id, inTrackingData, ppData, semester.codes) {
   moduleServer(
     id,
     ## Below is the module function
@@ -120,7 +121,7 @@ registrationTrackingSummaryServer <- function(id, inTrackingData, ppData) {
 
           theOutput <- scd3 %>%
             c3(x="courseChr", y='Percent Change', colors=list('Percent Change'="#003C71")) %>%
-            c3_bar(rotate=TRUE) %>%
+            c3_bar(rotated=TRUE) %>%
             legend(hide=TRUE) %>%
             tickAxis('x',count=2, outer=FALSE) %>%
             c3_chart_size(width=500, height=600)

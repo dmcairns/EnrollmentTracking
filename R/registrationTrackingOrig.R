@@ -40,12 +40,14 @@ registrationTrackingOrigUI <- function(id, label = "Registration Tracking") {
 #' @param previousSemestersFinalEnrollment previous semester's final enrollment
 #' @param fullRegistrationTracking full registration tracking data
 #' @param useShort use short data format
+#' @param semester.codes the semester codes
 #'
 #' @return
 #' @export
 #'
 #' @examples
-registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinalEnrollment, fullRegistrationTracking, useShort=FALSE) {
+registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinalEnrollment, fullRegistrationTracking, useShort=FALSE,
+                                           semester.codes) {
   moduleServer(
     id,
     ## Below is the module function
@@ -436,7 +438,7 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
           #assign("refStartDate", refStartDate, pos=1)
           #assign("inReferenceData", inReferenceData, pos=1)
           #cat("refStartDate:", refStartDate, "\n")
-          assign("classesStart", classesStart, pos=1)
+          #assign("classesStart", classesStart, pos=1)
           focalStartDate <- classesStart %>%
             filter(semester==focalSemester) %>%
             select("startDate") %>%
@@ -718,7 +720,7 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
         # convert input$referenceSemester to a   #
         # format suitable as a column name       #
         ##########################################
-        assign("t.theData", theData, pos=1)
+        #assign("t.theData", theData, pos=1)
         theData <- theData %>%
           pivot_wider(id_cols=dateCreated, names_from=major, values_from=n) %>%
           group_by(dateCreated) %>%
@@ -739,7 +741,7 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
           )
       })
       determineLosses <- reactive({
-        require(lubridate)
+        #require(lubridate)
         #req(input$referenceSemester)
         #req(input$input$selectDept)
         #cat(green("[determineLosses] useShort:", useShort, "\n"))
@@ -854,7 +856,7 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
 
       })
       determineGains <- function(){
-        require(lubridate)
+        #require(lubridate)
         #require(input$referenceSemester)
         #require(input$input$selectDept)
         #cat("In determineGains, inputReferenceSemester:", is.null(input$referenceSemester), ".\n")

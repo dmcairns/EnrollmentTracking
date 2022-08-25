@@ -61,7 +61,7 @@ fullRegistrationTrackingBoxModuleServer <- function(id, input, output, session, 
       ns <- session$ns
 
       semester.codes <- registrationDataBundle$outSemesterCodes$semester.codes  #This is a hack
-      assign("semester.codes", semester.codes, pos=1)                           #This is a hack
+      #assign("semester.codes", semester.codes, pos=1)                           #This is a hack
 
       output$enrollmentSidebar <- renderUI({
         p("Some text for enrollmentSidebar")
@@ -71,11 +71,14 @@ fullRegistrationTrackingBoxModuleServer <- function(id, input, output, session, 
                                                       deptAbbrv = "GEOG",
                                                       previousSemestersFinalEnrollment=registrationDataBundle$outCourseEnrollment$courseEnrollmentData,
                                                       fullRegistrationTracking=registrationDataBundle$outRegistrationTracking$fullRegistrationTracking,
-                                                      useShort=TRUE)
+                                                      useShort=TRUE,
+                                                      semester.codes=semester.codes)
 
-      historicEnrollmentServer("historicEnrollment", inData=registrationDataBundle$outCourseEnrollment$courseEnrollmentData, trackingProxy)
+      historicEnrollmentServer("historicEnrollment", inData=registrationDataBundle$outCourseEnrollment$courseEnrollmentData, trackingProxy,
+                               semester.codes=semester.codes)
 
-      registrationTrackingSummaryServer("t1", trackingProxy, ppData=registrationDataBundle$outRegistrationTracking$ppFullRegistrationTracking)
+      registrationTrackingSummaryServer("t1", trackingProxy, ppData=registrationDataBundle$outRegistrationTracking$ppFullRegistrationTracking,
+                                        semester.codes=semester.codes)
 
     }
   )
