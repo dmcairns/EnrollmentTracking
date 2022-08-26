@@ -422,6 +422,23 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
         req(input$referenceSemester)
         req(input$focalSemester)
         combineFocalAndReferenceData <- function(inFocalData, inReferenceData){
+          req(inFocalData)
+          req(inReferenceData)
+          #browser()
+          # fill in missing dates
+          if(nrow(inFocalData)>0){
+            inFocalData <- inFocalData %>%
+              mutate(dateCreated=as.POSIXct(dateCreated)) %>%
+              complete(dateCreated=seq.POSIXt(min(dateCreated), max(dateCreated), by="day")) %>%
+              mutate(dateCreated=as.character(dateCreated))
+          }
+          if(nrow(inReferenceData)>0){
+            inReferenceData <- inReferenceData %>%
+              mutate(dateCreated=as.POSIXct(dateCreated)) %>%
+              complete(dateCreated=seq.POSIXt(min(dateCreated), max(dateCreated), by="day")) %>%
+              mutate(dateCreated=as.character(dateCreated))
+          }
+          #browser()
           #cat(yellow("In combineFocalandReferenceData\n"))
           referenceSemester <- input$referenceSemester
           focalSemester <- input$focalSemester
@@ -592,18 +609,14 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
         }
 
         theData <- singleCourseSummaryWithoutSections(fullRegistrationTracking, paste(dept.name, useSelectCourse), input$focalSemester)
-        #cat(green("after singleCourseSummaryWithoutSections\n"))
-        #assign("t.frt", fullRegistrationTracking, pos=1)
-        #assign("t.psfe", previousSemestersFinalEnrollment, pos=1)
+
         if(!useShort)
           theReferenceData <- getReferenceData(previousSemestersFinalEnrollment, paste(dept.name, useSelectCourse), input$referenceSemester)
         else theReferenceData <- getReferenceDataShort(previousSemestersFinalEnrollment, paste(dept.name, useSelectCourse), input$referenceSemester)
-        #t.data <- createFullDataForFigure(fullRegistrationTracking, previousSemestersFinalEnrollment)
-        #cat(green("after getReferenceData\n"))
-        #assign("t.rd", theReferenceData, pos=1)
+
 
         t.data <- createFullDataForFigure(fullRegistrationTracking, theReferenceData, useShort)
-        #cat(green("after create FullDataForFigure\n"))
+#browser()
         ##########################################
         # convert input$referenceSemester to a   #
         # format suitable as a column name       #
@@ -630,6 +643,7 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
           c3_viridis()
         theData
       })
+
       make.plotSectionsC3 <- reactive({
         singleCourseSummaryWithSections <- function(inData, courseID, theSemester){
           options(dplyr.summarise.inform=F)
