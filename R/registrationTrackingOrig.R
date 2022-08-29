@@ -84,29 +84,33 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
       #########################
       output$selectDeptControl <- renderUI({
         ns <- session$ns
-        if(deptAbbrv == "ATMO") {
-          matchSelected=1
-        }
-        if(deptAbbrv == "GEOG") {
-          matchSelected=2
-        }
-        if(deptAbbrv == "GEOL") {
-          matchSelected=3
-        }
-        if(deptAbbrv == "GEOS") {
-          matchSelected=4
-        }
-        if(deptAbbrv == "GEOP") {
-          matchSelected=6
-        }
-        if(deptAbbrv == "OCNG") {
-          matchSelected=5
-        }
+        # if(deptAbbrv == "ATMO") {
+        #   matchSelected=1
+        # }
+        # if(deptAbbrv == "GEOG") {
+        #   matchSelected=2
+        # }
+        # if(deptAbbrv == "GEOL") {
+        #   matchSelected=3
+        # }
+        # if(deptAbbrv == "GEOS") {
+        #   matchSelected=4
+        # }
+        # if(deptAbbrv == "GEOP") {
+        #   matchSelected=6
+        # }
+        # if(deptAbbrv == "OCNG") {
+        #   matchSelected=5
+        # }
+        possibleSubjects <- unique(fullRegistrationTracking$subject)
+        # t.out <- selectInput(ns("selectDept"),
+        #                      label="Course Prefix",
+        #                      choices=list("ATMO"=1, "GEOG"=2, "GEOL"=3, "GEOP"=6, "GEOS"=4, "OCNG"=5),
+        #                      selected=matchSelected)
         t.out <- selectInput(ns("selectDept"),
-                             label="Course Prefix",
-                             choices=list("ATMO"=1, "GEOG"=2, "GEOL"=3, "GEOP"=6, "GEOS"=4, "OCNG"=5),
-                             selected=matchSelected)
-
+                             label="Course Prefix (New)",
+                             choices=possibleSubjects,
+                             selected=deptAbbrv)
 
         t.out
       })
@@ -200,24 +204,25 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
         ns <- session$ns
         req(input$selectDept)
 
-        if(input$selectDept == 1) {
-          selectedDept <- "ATMO"
-        }
-        if(input$selectDept == 2) {
-          selectedDept <- "GEOG"
-        }
-        if(input$selectDept == 3) {
-          selectedDept <- "GEOL"
-        }
-        if(input$selectDept == 4) {
-          selectedDept <- "GEOS"
-        }
-        if(input$selectDept == 6) {
-          selectedDept <- "GEOP"
-        }
-        if(input$selectDept == 5) {
-          selectedDept <- "OCNG"
-        }
+        # if(input$selectDept == 1) {
+        #   selectedDept <- "ATMO"
+        # }
+        # if(input$selectDept == 2) {
+        #   selectedDept <- "GEOG"
+        # }
+        # if(input$selectDept == 3) {
+        #   selectedDept <- "GEOL"
+        # }
+        # if(input$selectDept == 4) {
+        #   selectedDept <- "GEOS"
+        # }
+        # if(input$selectDept == 6) {
+        #   selectedDept <- "GEOP"
+        # }
+        # if(input$selectDept == 5) {
+        #   selectedDept <- "OCNG"
+        # }
+        selectedDept <- input$selectDept
         if(input$choiceUG==1) {
           courseNumber <- input$selectCourseUG
         } else {
@@ -308,7 +313,6 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
         ) #tabsetPanel
       })
       output$distPlotC3 <- renderC3({
-        #cat(green("in distPlotC3\n"))
         make.plotC3()
       })
       output$plotC3Majors <- renderC3({
@@ -349,14 +353,14 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
       #########################
       create.ug.course.list <- function(dept){
         # print("In create.ug.course.list")
-        if (as.numeric(dept) == 1) dept.name <- "ATMO"
-        if (as.numeric(dept) == 2) dept.name <- "GEOG"
-        if (as.numeric(dept) == 3) dept.name <- "GEOL"
-        if (as.numeric(dept) == 4) dept.name <- "GEOS"
-        if (as.numeric(dept) == 5) dept.name <- "OCNG"
-        if (as.numeric(dept) == 6) dept.name <- "GEOP"
+        # if (as.numeric(dept) == 1) dept.name <- "ATMO"
+        # if (as.numeric(dept) == 2) dept.name <- "GEOG"
+        # if (as.numeric(dept) == 3) dept.name <- "GEOL"
+        # if (as.numeric(dept) == 4) dept.name <- "GEOS"
+        # if (as.numeric(dept) == 5) dept.name <- "OCNG"
+        # if (as.numeric(dept) == 6) dept.name <- "GEOP"
         #t.data <- clge.enrollment.data
-
+        dept.name <- dept
         t.data <- fullRegistrationTracking %>%
           mutate(courseNumber=as.character(courseNumber)) %>%
           mutate(courseNumber=as.numeric(courseNumber)) %>%
@@ -373,12 +377,13 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
 
       create.grad.course.list <- function(dept){
         # print("In create.grad.course.list")
-        if (as.numeric(dept) == 1) dept.name <- "ATMO"
-        if (as.numeric(dept) == 2) dept.name <- "GEOG"
-        if (as.numeric(dept) == 3) dept.name <- "GEOL"
-        if (as.numeric(dept) == 4) dept.name <- "GEOS"
-        if (as.numeric(dept) == 5) dept.name <- "OCNG"
-        if (as.numeric(dept) == 6) dept.name <- "GEOP"
+        # if (as.numeric(dept) == 1) dept.name <- "ATMO"
+        # if (as.numeric(dept) == 2) dept.name <- "GEOG"
+        # if (as.numeric(dept) == 3) dept.name <- "GEOL"
+        # if (as.numeric(dept) == 4) dept.name <- "GEOS"
+        # if (as.numeric(dept) == 5) dept.name <- "OCNG"
+        # if (as.numeric(dept) == 6) dept.name <- "GEOP"
+        dept.name <- dept
         t.data <- fullRegistrationTracking %>%
           mutate(courseNumber=as.character(courseNumber)) %>%
           mutate(courseNumber=as.numeric(courseNumber)) %>%
@@ -522,12 +527,13 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
         }
 
         dept <- input$selectDept
-        if (as.numeric(dept) == 1) dept.name <- "ATMO"
-        if (as.numeric(dept) == 2) dept.name <- "GEOG"
-        if (as.numeric(dept) == 3) dept.name <- "GEOL"
-        if (as.numeric(dept) == 4) dept.name <- "GEOS"
-        if (as.numeric(dept) == 5) dept.name <- "OCNG"
-        if (as.numeric(dept) == 6) dept.name <- "GEOP"
+        # if (as.numeric(dept) == 1) dept.name <- "ATMO"
+        # if (as.numeric(dept) == 2) dept.name <- "GEOG"
+        # if (as.numeric(dept) == 3) dept.name <- "GEOL"
+        # if (as.numeric(dept) == 4) dept.name <- "GEOS"
+        # if (as.numeric(dept) == 5) dept.name <- "OCNG"
+        # if (as.numeric(dept) == 6) dept.name <- "GEOP"
+        dept.name <- dept
         if(input$choiceUG == "1") {
           useSelectCourse <- input$selectCourseUG
         } else {
@@ -595,19 +601,22 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, previousSemestersFinal
           referenceData$enrolledStudents
         }
 
+        #browser()
         dept <- input$selectDept
-        if (as.numeric(dept) == 1) dept.name <- "ATMO"
-        if (as.numeric(dept) == 2) dept.name <- "GEOG"
-        if (as.numeric(dept) == 3) dept.name <- "GEOL"
-        if (as.numeric(dept) == 4) dept.name <- "GEOS"
-        if (as.numeric(dept) == 5) dept.name <- "OCNG"
-        if (as.numeric(dept) == 6) dept.name <- "GEOP"
+        # if (as.numeric(dept) == 1) dept.name <- "ATMO"
+        # if (as.numeric(dept) == 2) dept.name <- "GEOG"
+        # if (as.numeric(dept) == 3) dept.name <- "GEOL"
+        # if (as.numeric(dept) == 4) dept.name <- "GEOS"
+        # if (as.numeric(dept) == 5) dept.name <- "OCNG"
+        # if (as.numeric(dept) == 6) dept.name <- "GEOP"
+        dept.name <- dept
         if(input$choiceUG == "1") {
           useSelectCourse <- input$selectCourseUG
         } else {
           useSelectCourse <- input$selectCourseGrad
         }
 
+        #browser()
         theData <- singleCourseSummaryWithoutSections(fullRegistrationTracking, paste(dept.name, useSelectCourse), input$focalSemester)
 
         if(!useShort)

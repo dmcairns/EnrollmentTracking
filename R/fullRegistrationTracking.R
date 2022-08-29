@@ -60,8 +60,7 @@ fullRegistrationTrackingBoxModuleServer <- function(id, input, output, session, 
     function(input, output, session){
       ns <- session$ns
 
-      semester.codes <- registrationDataBundle$outSemesterCodes$semester.codes  #This is a hack
-      #assign("semester.codes", semester.codes, pos=1)                           #This is a hack
+      semester.codes <- registrationDataBundle$outSemesterCodes$semester.codes
 
       output$enrollmentSidebar <- renderUI({
         p("Some text for enrollmentSidebar")
