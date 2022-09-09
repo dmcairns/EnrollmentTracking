@@ -109,6 +109,7 @@ registrationTrackingSummaryServer <- function(id, inTrackingData, ppData, semest
         req(inTrackingData$referenceSemester)
         semesterComparisonData <- createSemesterComparisonData(ppData, focalSem=inTrackingData$focalSemester,
                                                                refSem=inTrackingData$referenceSemester)
+
         if(nrow(semesterComparisonData)>0) {
           scd3 <- semesterComparisonData %>%
             filter(focalDateCreated==max(focalDateCreated)) %>%
@@ -159,6 +160,18 @@ registrationTrackingSummaryServer <- function(id, inTrackingData, ppData, semest
         }
 
         combineSemesters <- function(inData, focalSem, refSem, inStartDates){
+
+          ################################################
+          # inStartDates is not used at all.  Delete?    #
+          # or join with inData to create fill startDate #
+          # field?                                       #
+          ################################################
+
+          inData <- inData %>%
+            left_join(inStartDates, by=c("semester")) %>%
+            select("semester", "subject", "courseNumber", "dateCreated", "nReg", "startDate"="startDate.y", "temp1", "temp2", "sign",
+                   "daysBefore")
+
           #assign("inData1", inData, pos=1)
           #assign("t.focalSem", focalSem, pos=1)
           #assign("t.refSem", refSem, pos=1)
@@ -168,6 +181,7 @@ registrationTrackingSummaryServer <- function(id, inTrackingData, ppData, semest
           #cat(green("a nrow(inData):", nrow(inData), "\n"))
           #cat(green("focalSem:", focalSem, "\n"))
           #cat(green("something\n"))
+
           midData <- inData %>%
             mutate(temp1=difftime(dateCreated, startDate, units="days")) %>%
             mutate(temp2=as.numeric(str_extract(temp1, "\\w+"))) %>%
@@ -191,11 +205,12 @@ registrationTrackingSummaryServer <- function(id, inTrackingData, ppData, semest
             mutate(pctChange=diffReg/refReg*100) %>%
             mutate(courseChr=paste(subject, courseNumber))
 
-
+          #browser()
           outData
         }
 
         #cat(blue("1before combineSemesters\n"))
+
         midData <- combineSemesters(inData, focalSem, refSem, inClassesStart)
         #cat(blue("1after combineSemesters\n"))
         midData
