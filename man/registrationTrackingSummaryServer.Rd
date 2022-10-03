@@ -4,7 +4,17 @@
 \alias{registrationTrackingSummaryServer}
 \title{registrationTrackingSummaryServer}
 \usage{
-registrationTrackingSummaryServer(id, inTrackingData, ppData, semester.codes)
+registrationTrackingSummaryServer(
+  id,
+  inTrackingData,
+  ppData,
+  semester.codes,
+  focalSem,
+  refSem,
+  deptAbbrv,
+  classesStart,
+  synonyms
+)
 }
 \arguments{
 \item{id}{the id}
@@ -14,6 +24,16 @@ registrationTrackingSummaryServer(id, inTrackingData, ppData, semester.codes)
 \item{ppData}{the ppData}
 
 \item{semester.codes}{the semester codes}
+
+\item{focalSem}{focalSem}
+
+\item{refSem}{refSem}
+
+\item{deptAbbrv}{deptAbbrv}
+
+\item{classesStart}{classesStart}
+
+\item{synonyms}{synonyms}
 }
 \description{
 registrationTrackingSummaryServer

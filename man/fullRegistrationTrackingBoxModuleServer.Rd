@@ -9,7 +9,8 @@ fullRegistrationTrackingBoxModuleServer(
   input,
   output,
   session,
-  registrationDataBundle
+  registrationDataBundle,
+  classesStart
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ fullRegistrationTrackingBoxModuleServer(
 \item{session}{the session}
 
 \item{registrationDataBundle}{the input data}
+
+\item{classesStart}{dates that classes start by semester}
 }
 \description{
 fullRegistrationTrackingBoxModuleServer

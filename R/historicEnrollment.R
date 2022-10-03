@@ -13,7 +13,7 @@ historicEnrollmentUI <- function(id, label = "Historic Enrollment") {
                  shinydashboardPlus::box(
                    title=textOutput(ns("plotTitle")),
                    width=12,
-                   collapsible=TRUE,
+                   collapsible=FALSE,
                    solidHeader=TRUE,
                    sidebar = boxSidebar(
                      uiOutput(ns("courseEnrollmentControls")),
@@ -39,12 +39,21 @@ historicEnrollmentUI <- function(id, label = "Historic Enrollment") {
 #' @param inData the input data
 #' @param inTrackingData the tracking data
 #' @param semester.codes the semester.codes
+#' @param deptAbbrv the department abbreviation
+#' @param ugControl the undergraduate control
+#' @param chosenCourse the chosen course
+#' @param synonyms table of synonyms for department codes (e.g. PSYC = PBSI)
 #'
 #' @return
 #' @export
 #'
 #' @examples
-historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes) {
+historicEnrollmentServer <- function(id, inData, inTrackingData,
+                                     deptAbbrv,
+                                     ugControl,
+                                     chosenCourse,
+                                     semester.codes,
+                                     synonyms) {
   moduleServer(
     id,
     ## Below is the module function
@@ -112,94 +121,70 @@ historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes)
         )
 
       })
+      output$demoSemesterControl <- renderUI({
+        ns <- session$ns
+        theSemesters <- inData %>%
+          select("semester") %>%
+          unique() %>%
+          unlist() %>%
+          as.vector() %>%
+          sort()
+        t.out <- selectInput(ns("demoSemester"), "Demographics Semester:",
+                             theSemesters, selected=max(theSemesters))
+        t.out
+      })
       output$courseEnrollmentControls <- renderUI({
         ns <- session$ns
         theOutput <- tagList(
           fluidRow(
-            column(4, selectInput(ns("selectDept"),
-                                  label="Subject:",
-                                  choices=c("ATMO", "GEOG", "GEOL", "GEOP", "GEOS", "OCNG"),
-                                  selected="GEOG")),
             column(4, uiOutput(ns("startYearControl"))),
-            column(4, uiOutput(ns("endYearControl")))
+            column(4, uiOutput(ns("endYearControl"))),
+            column(4, uiOutput(ns("demoSemesterControl")))
           ),
 
-          radioButtons(ns("choiceUG"),
-                       "Course Level",
-                       c("Undergraduate", "Graduate")),
-          div(id="courseList", class="multiColumnBannerComponentSidebar",
-              uiOutput(ns('courseList'))),
+
           selectInput(ns("choiceSemesters"), label="Semesters",
                       choices=c("Spring", "Summer", "Fall"),
                       selected=c("Spring", "Fall"),
                       multiple=TRUE)
         )
-        # outputOptions(output,"courseList",suspendWhenHidden=FALSE)
-        # outputOptions(output, "ugcoursesSidebar", suspendWhenHidden=FALSE)
-        theOutput
-      })
-
-      output$courseList<- renderUI({
-        ns <- session$ns
-        #isUG <- TRUE
-        req(input$selectDept)
-        req(input$choiceUG)
-        #cat(blue("in output$courseList", "input$selectDept:", input$selectDept, "\n"))
-        #print(names(inData))
-        #cat(blue("after\n"))
-        theList <- inData %>%
-          filter(subject==input$selectDept)
-        if(input$choiceUG=="Undergraduate"){
-          theList <- theList %>%
-            filter(course.number < 500)
-        } else {
-          theList <- theList %>%
-            filter(course.number >= 500)
-        }
-        theList <- theList %>%
-          select("course.number") %>%
-          unique() %>%
-          arrange(course.number) %>%
-          unlist() %>%
-          as.vector()
-        #cat("theList:", theList, "\n")
-        #print(theList)
-        theOutput <-  radioButtons(ns("selectCourse"),
-                                   label="Courses",
-                                   choices=theList)
 
         theOutput
       })
+
 
       output$ugcoursesSidebar <- renderUI({
         ns <- session$ns
-        cat(red("entered ugcoursesSidebar\n"))
-        req(input$selectDept)
-        dept.code <- input$selectDept
-        #print(dept.code)
+
+        req(deptAbbrv())
+
+        dept.code <- deptAbbrv()
+
 
         radioButtons(ns("selectCourseUG"),
                      label="Courses",
-                     choices=create.ug.course.list(courseEnrollmentData, input$selectDept))
+                     choices=create.ug.course.list(courseEnrollmentData, deptAbbrv()))
       })
       output$ugcourses <- renderUI({
         ns <- session$ns
-        req(input$selectDept)
-        dept.code <- input$selectDept
+        # req(input$selectDept)
+        # dept.code <- input$selectDept
+        req(deptAbbrv())
         print(dept.code)
         #print(length(create.ug.course.list(dept.code)))
         radioButtons(ns("selectCourseUG"),
                      label=h4("Courses"),
-                     choices=create.ug.course.list(courseEnrollmentData, dept.code))
+                     choices=create.ug.course.list(courseEnrollmentData, deptAbbrv()))
       })
       output$gradcourses <- renderUI({
         ns <- session$ns
-        dept.code <- input$selectDept
-        print(dept.code)
+        # dept.code <- input$selectDept
+        # print(dept.code)
+
         # print(length(create.grad.course.list(dept.code)))
         radioButtons(ns("selectCourseGrad"),
                      label=h4("Courses"),
-                     choices=create.grad.course.list(courseEnrollmentData, dept.code))
+                     choices=create.grad.course.list(courseEnrollmentData, deptAbbrv()))
       })
       output$isData <- reactive({
         dim(generate.small.df())[[1]]
@@ -213,41 +198,19 @@ historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes)
       output$txt <- ({renderText("This course was not taught in this semester.")})
 
 
+
       #########################
       # Card Elements         #
       #########################
       output$plotTitle <- renderText({
         ns <- session$ns
-        #req(input$selectDept)
-        #req(input$selectCourse)
+
         req(inTrackingData$Department)
-        #cat(yellow("[plotTitle] synchronize:", inTrackingData$synchronize, "\n"))
-        #cat(yellow("[plotTitle] Department:", inTrackingData$Department, "\n"))
+        req(inTrackingData$synchronize)
         if(inTrackingData$synchronize==TRUE){
-          # if(inTrackingData$Department == 1) {
-          #   selectedDept <- "ATMO"
-          # }
-          # if(inTrackingData$Department == 2) {
-          #   selectedDept <- "GEOG"
-          # }
-          # if(inTrackingData$Department == 3) {
-          #   selectedDept <- "GEOL"
-          # }
-          # if(inTrackingData$Department == 4) {
-          #   selectedDept <- "GEOS"
-          # }
-          # if(inTrackingData$Department == 6) {
-          #   selectedDept <- "GEOP"
-          # }
-          # if(inTrackingData$Department == 5) {
-          #   selectedDept <- "OCNG"
-          # }
-
-          #theTitle <- paste0("Enrollment History for ", selectedDept, " ", inTrackingData$courseNum)
           theTitle <- paste0("Enrollment History for ", inTrackingData$Department, " ", inTrackingData$courseNum)
-
         } else {
-          theTitle <- paste0("Enrollment History for ", input$selectDept, " ", input$selectCourse)
+          theTitle <- paste0("Enrollment History for ", deptAbbrv(), " ", chosenCourse())
         }
 
         theTitle
@@ -264,18 +227,12 @@ historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes)
         tabsetPanel(type="tabs",
                     tabPanel("Enrollments",
                              conditionalPanel(condition="2 > 0", c3Output(ns("enrollmentPlotC3")))
-                             #c3Output("enrollmentPlotC3")
-                             #uiOutput(ns("conditionalEnrollmentPanel"))
                     ),
                     tabPanel("Major Demographics",
                              tagList(
-                               h1("this is intentionally blank")
+                               uiOutput(ns("demographicsPanel"))
                              )
-                             # column(
-                             #   width=4,
-                             #   prettySwitch(inputId=ns("graphicsSwitch"), label="Show Table", value=FALSE)
-                             # ),
-                             # uiOutput(ns("conditionalDemographicsPanel"))
+
                     )
         )
       })
@@ -305,41 +262,88 @@ historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes)
           }
         }
       })
+      output$demographicsPanel <- renderUI({
+        ns <- session$ns
+        tagList(
+          fluidRow(
+            column(6, DTOutput(ns("demographicsDT"))),
+            column(6, c3Output(ns("demographicsPie")))
+          )
+        )
+      })
+
+      output$demographicsPie <- renderC3({
+        processedData <- makeMajorsPie()
+
+        c3(processedData) %>%
+          c3_pie(legendPosition="Left") %>%
+          legend(position="right")
+
+      })
+      output$demographicsDT <- renderDT({
+        processedData <- makeMajorsDT() %>%
+          arrange(-n)
+        datatable(processedData, escape=FALSE,
+                  #container=sketch,
+                  rownames=FALSE,
+                  options=list(
+                    dom='t',
+                    ordering=FALSE,
+                    pageLength=100,
+                    scrollY="200px"
+                  ))
+      })
+      makeMajorsDT <- reactive({
+        demoData <- demoDataPreparation()
+
+        demoData
+
+      })
+      makeMajorsPie <- reactive({
+        demoData <- demoDataPreparation() %>%
+          ungroup() %>%
+          slice_max(n, n=5) %>%
+          pivot_wider(names_from=major, values_from=n)
+
+        demoData
+      })
+      demoDataPreparation <- reactive({
+
+        req(input$demoSemester)
+        req(deptAbbrv())
+        req(chosenCourse())
+
+        # Needs to reference a local semester control to replace focalSem()
+
+        theDemographicData <- inData %>%
+          mutate(course.designation=paste(subject, course.number)) %>%
+          filter(course.designation==paste(deptAbbrv(), chosenCourse())) %>%
+          filter(semester==input$demoSemester) %>%
+          group_by(major) %>%
+          summarize(n=sum(enrolledStudents), .groups="drop")
+
+        theDemographicData
+
+      })
       output$enrollmentPlot <- renderPlot({
         makeEnrollmentPlot()
       })
       output$enrollmentPlotC3 <- renderC3({
-        req(input$selectDept)
-        req(input$selectCourse)
         req(input$choiceSemesters)
         req(input$startYear)
         req(input$endYear)
         req(inTrackingData$Department)
         req(inTrackingData$courseNum)
 
+        possibleSubjects <- synonyms %>%
+          filter(subject==inTrackingData$Department) %>%
+          unlist() %>%
+          as.vector() %>%
+          unique()
 
         if(inTrackingData$synchronize==TRUE){
-          # if(inTrackingData$Department == 1) {
-          #   selectedDept <- "ATMO"
-          # }
-          # if(inTrackingData$Department == 2) {
-          #   selectedDept <- "GEOG"
-          # }
-          # if(inTrackingData$Department == 3) {
-          #   selectedDept <- "GEOL"
-          # }
-          # if(inTrackingData$Department == 4) {
-          #   selectedDept <- "GEOS"
-          # }
-          # if(inTrackingData$Department == 6) {
-          #   selectedDept <- "GEOP"
-          # }
-          # if(inTrackingData$Department == 5) {
-          #   selectedDept <- "OCNG"
-          # }
-          selectedDept <- inTrackingData$Department
           useEnrollmentData <- inData %>%
-            filter(subject==selectedDept) %>%
+            filter(subject %in% possibleSubjects) %>%
             filter(course.number==inTrackingData$courseNum) %>%
             filter(Semester.1 %in% input$choiceSemesters) %>%
             filter(year >= input$startYear) %>%
@@ -349,7 +353,7 @@ historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes)
             select("semester", "Students Enrolled" = "numStudents")
         } else {
           useEnrollmentData <- inData %>%
-            filter(subject==input$selectDept) %>%
+            filter(subject %in% possibleSubjects) %>%
             filter(course.number==input$selectCourse) %>%
             filter(Semester.1 %in% input$choiceSemesters) %>%
             filter(year >= input$startYear) %>%
@@ -359,6 +363,9 @@ historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes)
             select("semester", "Students Enrolled" = "numStudents")
         }
 
+
+        #browser()
+        #Add zeroes for semesters when course is not offered.
 
         outputChart <- useEnrollmentData %>%
           c3(x="semester", colors=list('Students Enrolled'="#003C71")) %>%
@@ -397,14 +404,12 @@ historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes)
       #########################
       # Observer Functions    #
       #########################
-      observeEvent(input$modalActivationButton, {
-        #toggleCssClass does not work if plotConrolsDiv is wrapped
-        #in an ns()
-        toggleCssClass(id="controlsBanner", class="visible")
-      })
-      observeEvent(input$selectDept, {
-        #cat("Dropdown menu item changed.\n")
-      })
+      # observeEvent(input$modalActivationButton, {
+      #   #toggleCssClass does not work if plotConrolsDiv is wrapped
+      #   #in an ns()
+      #   toggleCssClass(id="controlsBanner", class="visible")
+      # })
+
 
       #########################
       # Data processing and   #
@@ -483,8 +488,6 @@ historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes)
         t.list
       }
       generate.small.df <- reactive({
-        #cat("selectCourse:", input$selectCourse, "choiceSemesters:", input$choiceSemesters, "selectYear", input$selectYear)
-        #cat("choiceSections:", input$choiceSections, "selectCourseUG:", input$selectCourseUG, "\n")
         req(input$selectCourseUG)
         req(input$choiceUG)
 
@@ -562,22 +565,11 @@ historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes)
       }
 
       generate.section.df <- reactive({
-        #print("In generate.section.df")
-        #cat("selectCourse:", input$selectCourse, "choiceSemesters:", input$choiceSemesters, "selectYear", input$selectYear)
-        #cat("choiceSections:", input$choiceSections, "selectCourseUG:", input$selectCourseUG, "\n")
-        #cat("choiceSemesters:", input$choiceSemesters, "\n")
-
-        #req(input$choiceSemesters)
 
         req(courseEnrollmentData)
         req(input$choiceUG)
-        #req(input$selectCourseUG)
-        #req(input$choiceUG)
-        #req(input$selectYear)
-        #req(input$choiceSections)
+
         t.data <- courseEnrollmentData
-        #assign("t.data1", t.data, pos=1)
-        #print(names(t.data))
 
         if("section" %in% names(t.data)) {
           t.data <- t.data %>%
@@ -585,35 +577,30 @@ historicEnrollmentServer <- function(id, inData, inTrackingData, semester.codes)
         }
 
         t.data$Section <- factor(t.data$Section)
-        #cat(green("[generate.section.df] before input$choiceSemesters != all \n"))
-        #cat(green("[generate.section.df] choiceSemesters:", input$choiceSemesters, "\n"))
-        #if(input$choiceSemesters != "all") t.data <- filter(t.data, Semester.1==input$choiceSemesters)
+
         if(input$choiceUG == "1") {
           useSelectCourse <- input$selectCourseUG
         } else {
           useSelectCourse <- input$selectCourseGrad
         }
-        #print(useSelectCourse)
-        #cat("useSelectCourse:", useSelectCourse, ".\n")
+
         if(!is.null(useSelectCourse)){
           t.data <- t.data %>%
             filter(Course==useSelectCourse)
         } else t.data <- c(NULL)
-        #print(t.data)
+
         t.data
       })
 
       generate.demographics.df <- reactive({
         t.data <- courseDemographicsData
-        #cat(green("[generate.demographics.df] before input$choiceSemesters != all\n"))
-        #cat(green("[generate.demographics.df] choiceSemesters:", input$choiceSemesters, "\n"))
-        #if(input$choiceSemesters != "all") t.data <- filter(t.data, Semester.1==input$choiceSemesters)
+
         if(input$choiceUG == "1") {
           useSelectCourse <- input$selectCourseUG
         } else {
           useSelectCourse <- input$selectCourseGrad
         }
-        #print(input$selectYear)
+
         if(input$selectYear != 3000){
           t.data <- t.data %>%
             filter(year==input$selectYear)

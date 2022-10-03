@@ -4,7 +4,16 @@
 \alias{historicEnrollmentServer}
 \title{historicEnrollmentServer}
 \usage{
-historicEnrollmentServer(id, inData, inTrackingData, semester.codes)
+historicEnrollmentServer(
+  id,
+  inData,
+  inTrackingData,
+  deptAbbrv,
+  ugControl,
+  chosenCourse,
+  semester.codes,
+  synonyms
+)
 }
 \arguments{
 \item{id}{the id}
@@ -13,7 +22,15 @@ historicEnrollmentServer(id, inData, inTrackingData, semester.codes)
 
 \item{inTrackingData}{the tracking data}
 
+\item{deptAbbrv}{the department abbreviation}
+
+\item{ugControl}{the undergraduate control}
+
+\item{chosenCourse}{the chosen course}
+
 \item{semester.codes}{the semester.codes}
+
+\item{synonyms}{table of synonyms for department codes (e.g. PSYC = PBSI)}
 }
 \description{
 historicEnrollmentServer

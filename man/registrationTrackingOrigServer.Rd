@@ -7,16 +7,36 @@
 registrationTrackingOrigServer(
   id,
   deptAbbrv,
+  focalSem,
+  refSem,
+  ugControl,
+  syncSwitch,
+  sameTerm,
+  chosenCourse,
   previousSemestersFinalEnrollment,
   fullRegistrationTracking,
   useShort = FALSE,
-  semester.codes
+  semester.codes,
+  classesStart,
+  synonyms
 )
 }
 \arguments{
 \item{id}{the id}
 
 \item{deptAbbrv}{the Department Abbreviation}
+
+\item{focalSem}{focal Semester}
+
+\item{refSem}{reference Semestr}
+
+\item{ugControl}{undergraduate control}
+
+\item{syncSwitch}{syncronize switch}
+
+\item{sameTerm}{same term}
+
+\item{chosenCourse}{chosen course}
 
 \item{previousSemestersFinalEnrollment}{previous semester's final enrollment}
 
@@ -25,6 +45,10 @@ registrationTrackingOrigServer(
 \item{useShort}{use short data format}
 
 \item{semester.codes}{the semester codes}
+
+\item{classesStart}{list of dates when classes start by semester}
+
+\item{synonyms}{for departments (e.g. PSYC=PBSI)}
 }
 \description{
 registrationTrackingOrigServer

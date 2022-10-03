@@ -34,5 +34,7 @@ utils::globalVariables(c("course.designation",
                          "section",
                          "suject",
                          "total_Enrollment",
-                         "n.."))
+                         "n..",
+                         "nStudents",
+                         "value"))
 utils::globalVariables(c(":=", "!!", "."))
