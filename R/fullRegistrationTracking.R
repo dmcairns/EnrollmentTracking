@@ -156,9 +156,9 @@ fullRegistrationTrackingBoxModuleServer <- function(id, input, output, session, 
         initialSubject <- possibleSubjects[randomIndex]
         tagList(
           selectInput(ns("testInput3"), "Subject", choices=possibleSubjects, selected=initialSubject),
-          fluidRow(column(4, div(id="bannerComponent3", class="bannerComponent",
+          fluidRow(column(6, div(id="bannerComponent3", class="bannerComponent",
                                  uiOutput(ns("focalSemester")))),
-                   column(4, div(id="bannerComponent4", class="bannerComponent",
+                   column(6, div(id="bannerComponent4", class="bannerComponent",
                                  uiOutput(ns("referenceSemester"))))
           ),
           fluidRow(tagList(
