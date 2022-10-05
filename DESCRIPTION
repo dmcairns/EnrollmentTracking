@@ -26,3 +26,5 @@ Imports:
     stringr,
     tidyr,
     dashboardthemes
+URL: https://github.com/dmcairns/EnrollmentTracking
+BugReports: https://github.com/dmcairns/EnrollmentTracking/issues
