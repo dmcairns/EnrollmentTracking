@@ -155,25 +155,29 @@ fullRegistrationTrackingBoxModuleServer <- function(id, input, output, session, 
         randomIndex <- sample(1:length(possibleSubjects), 1)
         initialSubject <- possibleSubjects[randomIndex]
         tagList(
-          selectInput(ns("testInput3"), "Subject", choices=possibleSubjects, selected="GEOG"),
-          fluidRow(column(6, div(id="bannerComponent3", class="bannerComponent",
-                                 uiOutput(ns("focalSemester")))),
-                   column(6, div(id="bannerComponent4", class="bannerComponent",
-                                 uiOutput(ns("referenceSemester"))))
-          ),
-          fluidRow(tagList(
-            div(id="bannerComponent2", class="bannerComponent",
-                uiOutput(ns("choiceUGControl"))),
-            div(id="bannerComponent6", class="bannerComponent",
-                uiOutput(ns("synchronize"))),
-            div(id="bannerComponent7", class="bannerComponent",
-                uiOutput(ns("sameTerm")))
-          )),
-          fluidRow(
-            column(12, tagList(
-              div(id="bannerComponent5", class="multiColumnBannerComponent",
-                  uiOutput(ns("courseList")))
-            ))
+          div(id="sidebarContainer", class="sidebarContainerMain",
+              tagList(
+                selectInput(ns("testInput3"), "Subject", choices=possibleSubjects, selected=initialSubject),
+                fluidRow(column(6, div(id="bannerComponent3", class="bannerComponent",
+                                       uiOutput(ns("focalSemester")))),
+                         column(6, div(id="bannerComponent4", class="bannerComponent",
+                                       uiOutput(ns("referenceSemester"))))
+                ),
+                fluidRow(tagList(
+                  div(id="bannerComponent2", class="bannerComponent",
+                      uiOutput(ns("choiceUGControl"))),
+                  div(id="bannerComponent6", class="bannerComponent",
+                      uiOutput(ns("synchronize"))),
+                  div(id="bannerComponent7", class="bannerComponent",
+                      uiOutput(ns("sameTerm")))
+                )),
+                fluidRow(
+                  column(12, tagList(
+                    div(id="bannerComponent5a", class="multiColumnBannerComponent",
+                        uiOutput(ns("courseList")))
+                  ))
+                )
+              )
           )
         )
       })
