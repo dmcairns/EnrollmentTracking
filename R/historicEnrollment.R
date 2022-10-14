@@ -336,7 +336,7 @@ historicEnrollmentServer <- function(id, inData, inTrackingData,
         req(inTrackingData$courseNum)
 
         possibleSubjects <- synonyms %>%
-          filter(subject==inTrackingData$Department) %>%
+          filter(subject %in% inTrackingData$Department) %>%
           unlist() %>%
           as.vector() %>%
           unique()
