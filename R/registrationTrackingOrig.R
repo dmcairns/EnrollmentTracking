@@ -67,16 +67,24 @@ registrationTrackingOrigServer <- function(id, deptAbbrv, focalSem, refSem, ugCo
       #########################
       # Reactive Variables    #
       #########################
+
       vals <- reactiveValues()
       observe({vals$Department <- deptAbbrv()})
       observe({vals$courseNum <- chosenCourse()})
       observe({vals$synchronize <- syncSwitch()})
       observe({vals$synchronize <- sameTerm()})
       observe({vals$focalSemester <- rvFocalSemester()})
+      #observe({vals$theData <- fullRegistrationTracking()})
       rvFocalSemester <- reactiveVal(NA)
       rvReferenceSemester <- reactiveVal(NA)
       rvDepartment <- reactiveVal(NA)
       rvCourse <- reactiveVal(NA)
+      if(is.reactive(fullRegistrationTracking)){
+        cat("fullRegistrationTracking is reactive\n")
+        observe({vals$theData <-  fullRegistrationTracking()})
+      } else {
+        vals$theData <- fullRegistrationTracking
+      }
 
       #########################
       # Input Control UIs     #

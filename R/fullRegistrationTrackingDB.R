@@ -78,7 +78,8 @@ fullRegistrationTrackingExternalDBBoxModuleServer <- function(id, input, output,
       library(dbplyr)
 
       Sys.setenv(PGGSSENCMODE="disable")
-      fullRegistrationTracking <- NULL
+
+      fullRegistrationTracking <- reactiveValues(theData=NULL)
 
       # con <- dbConnect(RPostgres::Postgres(),
       #                  dbname = 'mcairns/EnrollmentTracking', # database name
@@ -88,11 +89,14 @@ fullRegistrationTrackingExternalDBBoxModuleServer <- function(id, input, output,
       #                  password = "v2_3v5SD_cRWEpZn8CMgLfU4hNCbaXaH")
 
       #query <- "SELECT * FROM t202221 WHERE subject = 'GEOG'"
-      query <- "SELECT * FROM semesterCodes"
+      query <- "SELECT * FROM semestercodes"
       semesterCodes <- DBI::dbGetQuery(dbConn, sql(query))
+      print(dim(semesterCodes))
 
-      query <- "SELECT * FROM courseEnrollmentData"
+      query <- "SELECT * FROM courseenrollmentdata"
       courseEnrollmentData <- DBI::dbGetQuery(dbConn, sql(query))
+      print(dim(courseEnrollmentData))
+
 
       #dbDisconnect(con)
       ###############################################
@@ -135,10 +139,14 @@ fullRegistrationTrackingExternalDBBoxModuleServer <- function(id, input, output,
       })
       output$focalSemester <- renderUI({
         ns <- session$ns
+        # selectInput(ns("focalSemester"),
+        #             label="Focal Semester",
+        #             choices=possibleSemesters,
+        #             selected=max(possibleSemesters))
         selectInput(ns("focalSemester"),
                     label="Focal Semester",
                     choices=possibleSemesters,
-                    selected=max(possibleSemesters))
+                    selected="202221")
 
       })
       output$choiceUGControl <- renderUI({
@@ -219,85 +227,92 @@ fullRegistrationTrackingExternalDBBoxModuleServer <- function(id, input, output,
       observeEvent(input$focalSemester,{
         # check to see if the fullRegistrationTracking object is null
         # if not, check to see if input$focalSemester is not null
+        cat("Entering observeEvent for focalSemester\n")
         req(input$testInput3)
-
+        cat("Paste req(input$testInput3\n")
         if(!is.null(input$focalSemester)){
-          if(is.null(fullRegistrationTracking)){
-            query <- paste0("SELECT * FROM t", input$focalSemester,"WHERE subject = '", input$testInput3,"'")
-            fullRegistrationTracking <- DBI::dbGetQuery(dbConn, sql(query))
+          if(is.null(fullRegistrationTracking$theData)){
+            query <- paste0("SELECT * FROM t", input$focalSemester," WHERE subject = '", input$testInput3,"'")
+            fullRegistrationTracking$theData <<- DBI::dbGetQuery(dbConn, sql(query))
+            #browser()
           } else {
             # check to see if the semester of interest and dept of interest
             # are in the dataset.  if they already are, then no action necessary
             # else pull the data from the DB.
-            availableSubjectss <- unique(fullRegistrationTracking$subject)
-            availableSemesters <- unique(fullRegistrationTracking$semester)
+            availableSubjects <- unique(fullRegistrationTracking$theData$subject)
+            availableSemesters <- unique(fullRegistrationTracking$theData$semester)
             if(!(input$focalSemester %in% availableSemesters) &
                !(input$testInput3 %in% availableSubjects)){
-              query <- paste0("SELECT * FROM t", input$focalSemester,"WHERE subject = '", input$testInput3,"'")
+              query <- paste0("SELECT * FROM t", input$focalSemester," WHERE subject = '", input$testInput3,"'")
               midData <- DBI::dbGetQuery(dbConn, sql(query))
-              fullRegistrationTracking <- rbind(fullRegistrationTracking, midData)
+              fullRegistrationTracking$theData <<- rbind(fullRegistrationTracking$theData, midData)
+              #browser()
             }
           }
         }
       })
       observeEvent(input$referenceSemester, {
+
         req(input$testInput3)
+        #browser()
         if(!is.null(input$referenceSemester)){
-          if(is.null(fullRegistrationTracking)){
-            query <- paste0("SELECT * FROM t", input$referenceSemester,"WHERE subject = '", input$testInput3,"'")
-            fullRegistrationTracking <- DBI::dbGetQuery(dbConn, sql(query))
+          if(is.null(fullRegistrationTracking$theData)){
+            query <- paste0("SELECT * FROM t", input$referenceSemester," WHERE subject = '", input$testInput3,"'")
+            fullRegistrationTracking$theData <<- DBI::dbGetQuery(dbConn, sql(query))
           } else {
             # check to see if the semester of interest and dept of interest
             # are in the dataset.  if they already are, then no action necessary
             # else pull the data from the DB.
-            availableSubjectss <- unique(fullRegistrationTracking$subject)
-            availableSemesters <- unique(fullRegistrationTracking$semester)
+            availableSubjects <- unique(fullRegistrationTracking$theData$subject)
+            availableSemesters <- unique(fullRegistrationTracking$theData$semester)
             if(!(input$referenceSemester %in% availableSemesters) &
                !(input$testInput3 %in% availableSubjects)){
-              query <- paste0("SELECT * FROM t", input$referenceSemester,"WHERE subject = '", input$testInput3,"'")
+              query <- paste0("SELECT * FROM t", input$referenceSemester," WHERE subject = '", input$testInput3,"'")
               midData <- DBI::dbGetQuery(dbConn, sql(query))
-              fullRegistrationTracking <- rbind(fullRegistrationTracking, midData)
+              fullRegistrationTracking$theData <<- rbind(fullRegistrationTracking$theData, midData)
             }
           }
         }
       })
       observeEvent(input$testInput3, {
+
         req(input$referenceSemester)
         req(input$focalSemester)
+        browser()
         if(!is.null(input$testInput3)){
-          if(is.null(fullRegistrationTracking)){
-            query1 <- paste0("SELECT * FROM t", input$referenceSemester,"WHERE subject = '", input$testInput3,"'")
-            query2 <- paste0("SELECT * FROM t", input$focalSemester,"WHERE subject = '", input$testInput3,"'")
+          if(is.null(fullRegistrationTracking$theData)){
+            query1 <- paste0("SELECT * FROM t", input$referenceSemester," WHERE subject = '", input$testInput3,"'")
+            query2 <- paste0("SELECT * FROM t", input$focalSemester," WHERE subject = '", input$testInput3,"'")
 
             midData1 <- DBI::dbGetQuery(dbConn, sql(query1))
             midData2 <- DBI::dbGetQuery(dbConn, sql(query2))
-            fullRegistrationTracking <- rbind(midData1, midData2)
+            fullRegistrationTracking$theData <- rbind(midData1, midData2)
 
           } else {
             # check to see if the semester of interest and dept of interest
             # are in the dataset.  if they already are, then no action necessary
             # else pull the data from the DB.
-            tempData <- fullRegistrationData %>%
+            tempData <- fullRegistrationTracking$theData %>%
               mutate(combo=paste(subject, semester))
 
             availableCombos <- unique(tempData$combo)
 
             if(!(paste(input$testInput3, input$referenceSemester) %in% availableCombos)){
-              query <- paste0("SELECT * FROM t", input$referenceSemester,"WHERE subject = '", input$testInput3,"'")
+              query <- paste0("SELECT * FROM t", input$referenceSemester," WHERE subject = '", input$testInput3,"'")
               midData <- DBI::dbGetQuery(dbConn, sql(query))
-              fullRegistrationTracking <- rbind(fullRegistrationTracking, midData)
+              fullRegistrationTracking$theData <<- rbind(fullRegistrationTracking$theData, midData)
             }
             if(!(paste(input$testInput3, input$focalSemester) %in% availableCombos)){
-              query <- paste0("SELECT * FROM t", input$focalSemester,"WHERE subject = '", input$testInput3,"'")
+              query <- paste0("SELECT * FROM t", input$focalSemester," WHERE subject = '", input$testInput3,"'")
               midData <- DBI::dbGetQuery(dbConn, sql(query))
-              fullRegistrationTracking <- rbind(fullRegistrationTracking, midData)
+              fullRegistrationTracking$theData <<- rbind(fullRegistrationTracking$theData, midData)
             }
           }
         }
       })
 
-      create.ug.course.list <- function(dept){
-        t.data <- fullRegistrationTracking %>%
+      create.ug.course.list.orig <- function(dept){
+        t.data <- fullRegistrationTracking$theData %>%
           mutate(courseNumber=as.character(courseNumber)) %>%
           mutate(courseNumber=as.numeric(courseNumber)) %>%
           filter(subject==dept) %>%
@@ -311,6 +326,20 @@ fullRegistrationTrackingExternalDBBoxModuleServer <- function(id, input, output,
         t.data
       }
 
+      create.ug.course.list <- function(dept){
+        t.data <- courseEnrollmentData %>%
+          mutate(courseNumber=as.character(course.number)) %>%
+          mutate(courseNumber=as.numeric(courseNumber)) %>%
+          filter(subject==dept) %>%
+          filter(courseNumber < 500) %>%
+          select("courseNumber") %>%
+          unlist() %>%
+          as.vector() %>%
+          unique() %>%
+          sort()
+
+        t.data
+      }
       create.grad.course.list <- function(dept){
 
         t.data <- fullRegistrationTracking %>%
@@ -329,35 +358,38 @@ fullRegistrationTrackingExternalDBBoxModuleServer <- function(id, input, output,
 
       theDeptAbbrv <- reactive({input$sidebarSelectDepartment})
 
-      trackingProxy <- registrationTrackingOrigServer("registrationTrackingGEOG",
-                                                      deptAbbrv = reactive({input$testInput3}),
-                                                      focalSem = reactive({input$focalSemester}),
-                                                      refSem = reactive({input$referenceSemester}),
-                                                      ugControl=reactive({input$choiceUG}),
-                                                      syncSwitch=reactive({input$synchSwitch}), # probably not needed
-                                                      sameTerm=reactive({input$sameTermSwitch}),
-                                                      chosenCourse=reactive({input$selectCourse}),
-                                                      previousSemestersFinalEnrollment=courseEnrollmentData,
-                                                      fullRegistrationTracking=fullRegistrationTracking,
-                                                      useShort=TRUE,
-                                                      semester.codes=semester.codes,
-                                                      classesStart=classesStart,
-                                                      synonyms=departmentSynonyms)
+      if(!is.null(reactive({fullRegistrationTracking$theData}))){
+        someData <- reactive({input$fullRegistrationTracking$theData})
+        trackingProxy <- registrationTrackingOrigServer("registrationTrackingGEOG",
+                                                        deptAbbrv = reactive({input$testInput3}),
+                                                        focalSem = reactive({input$focalSemester}),
+                                                        refSem = reactive({input$referenceSemester}),
+                                                        ugControl=reactive({input$choiceUG}),
+                                                        syncSwitch=reactive({input$synchSwitch}), # probably not needed
+                                                        sameTerm=reactive({input$sameTermSwitch}),
+                                                        chosenCourse=reactive({input$selectCourse}),
+                                                        previousSemestersFinalEnrollment=courseEnrollmentData,
+                                                        fullRegistrationTracking=reactive({fullRegistrationTracking$theData}),
+                                                        useShort=TRUE,
+                                                        semester.codes=semester.codes,
+                                                        classesStart=classesStart,
+                                                        synonyms=departmentSynonyms)
+        #browser()
+        historicEnrollmentServer("historicEnrollment", inData=courseEnrollmentData, trackingProxy,
+                                 deptAbbrv = reactive({input$testInput3}),
+                                 ugControl=reactive({input$choiceUG}),
+                                 chosenCourse=reactive({input$selectCourse}),
+                                 semester.codes=semester.codes,
+                                 synonyms=departmentSynonyms)
 
-      historicEnrollmentServer("historicEnrollment", inData=courseEnrollmentData, trackingProxy,
-                               deptAbbrv = reactive({input$testInput3}),
-                               ugControl=reactive({input$choiceUG}),
-                               chosenCourse=reactive({input$selectCourse}),
-                               semester.codes=semester.codes,
-                               synonyms=departmentSynonyms)
-
-      registrationTrackingSummaryServer("t1", trackingProxy, ppData=fullRegistrationTracking,
-                                        semester.codes=semester.codes,
-                                        focalSem = reactive({input$focalSemester}),
-                                        refSem = reactive({input$referenceSemester}),
-                                        deptAbbrv = reactive({input$testInput3}),
-                                        classesStart=classesStart,
-                                        synonyms=departmentSynonyms)
+        registrationTrackingSummaryServer("t1", trackingProxy, ppData=someData,
+                                          semester.codes=semester.codes,
+                                          focalSem = reactive({input$focalSemester}),
+                                          refSem = reactive({input$referenceSemester}),
+                                          deptAbbrv = reactive({input$testInput3}),
+                                          classesStart=classesStart,
+                                          synonyms=departmentSynonyms)
+      }
 
     }
   )
