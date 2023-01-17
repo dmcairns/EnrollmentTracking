@@ -23,20 +23,20 @@ fullRegistrationTrackingExternalDBBoxModuleUI <- function(id){
       ),
       fluidRow(
         column(8, tagList(
-          #div(class="thingHolder",
-          fluidRow(
-            registrationTrackingOrigUI(ns("registrationTrackingGEOG"))
-          ),
+
+          # fluidRow(
+          #   registrationTrackingOrigUI(ns("registrationTrackingGEOG"))
+          # ),
           fluidRow(
             historicEnrollmentUI(ns("historicEnrollment"))
           ))),
         column(4, tagList(
-          #div(class="thingHolder",
-          fluidRow(
-            tagList(
-              registrationTrackingSummaryUI(ns("t1"))
-            )
-          )
+
+          # fluidRow(
+          #   tagList(
+          #     registrationTrackingSummaryUI(ns("t1"))
+          #   )
+          # )
         )))
     ),
     sidebar = boxSidebar(
@@ -382,13 +382,13 @@ fullRegistrationTrackingExternalDBBoxModuleServer <- function(id, input, output,
                                  semester.codes=semester.codes,
                                  synonyms=departmentSynonyms)
 
-        registrationTrackingSummaryServer("t1", trackingProxy, ppData=someData,
-                                          semester.codes=semester.codes,
-                                          focalSem = reactive({input$focalSemester}),
-                                          refSem = reactive({input$referenceSemester}),
-                                          deptAbbrv = reactive({input$testInput3}),
-                                          classesStart=classesStart,
-                                          synonyms=departmentSynonyms)
+        # registrationTrackingSummaryServer("t1", trackingProxy, ppData=someData,
+        #                                   semester.codes=semester.codes,
+        #                                   focalSem = reactive({input$focalSemester}),
+        #                                   refSem = reactive({input$referenceSemester}),
+        #                                   deptAbbrv = reactive({input$testInput3}),
+        #                                   classesStart=classesStart,
+        #                                   synonyms=departmentSynonyms)
       }
 
     }

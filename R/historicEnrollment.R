@@ -59,6 +59,7 @@ historicEnrollmentServer <- function(id, inData, inTrackingData,
     ## Below is the module function
     function(input, output, session) {
 
+
       courseEnrollmentData <- inData
       #########################
       # Input Control UIs     #
@@ -75,14 +76,13 @@ historicEnrollmentServer <- function(id, inData, inTrackingData,
       })
       output$startYearControl  <- renderUI({
         ns <- session$ns
-        theYears <- inData %>%
-          select("year") %>%
-          unique() %>%
-          unlist() %>%
-          as.vector()
 
-        min.year <- min(theYears)
-        max.year <- max(theYears)
+        theYears <- inData %>%
+          pull(year) %>%
+          unique()
+
+        min.year <- as.integer(min(theYears))
+        max.year <- as.integer(max(theYears))
 
         semester.list <- c(min.year:max.year)
 
@@ -96,15 +96,14 @@ historicEnrollmentServer <- function(id, inData, inTrackingData,
         ns <- session$ns
 
         req(input$startYear)
+
         theYears <- inData %>%
           filter(year >= input$startYear) %>%
-          select("year") %>%
-          unique() %>%
-          unlist() %>%
-          as.vector()
+          pull(year) %>%
+          unique()
 
-        min.year <- min(theYears)
-        max.year <- max(theYears)
+        min.year <- as.integer(min(theYears))
+        max.year <- as.integer(max(theYears))
 
         semester.list <- c(min.year:max.year)
 
@@ -320,7 +319,7 @@ historicEnrollmentServer <- function(id, inData, inTrackingData,
           filter(course.designation==paste(deptAbbrv(), chosenCourse())) %>%
           filter(semester==input$demoSemester) %>%
           group_by(major) %>%
-          summarize(n=sum(enrolledStudents), .groups="drop")
+          summarize(n=sum(enrolledstudents), .groups="drop")
 
         theDemographicData
 
@@ -349,7 +348,7 @@ historicEnrollmentServer <- function(id, inData, inTrackingData,
             filter(year >= input$startYear) %>%
             filter(year <= input$endYear) %>%
             group_by(year, semester) %>%
-            summarize(numStudents=sum(enrolledStudents), .groups="drop") %>%
+            summarize(numStudents=sum(enrolledstudents), .groups="drop") %>%
             select("semester", "Students Enrolled" = "numStudents")
         } else {
           useEnrollmentData <- inData %>%
@@ -359,7 +358,7 @@ historicEnrollmentServer <- function(id, inData, inTrackingData,
             filter(year >= input$startYear) %>%
             filter(year <= input$endYear) %>%
             group_by(year, semester) %>%
-            summarize(numStudents=sum(enrolledStudents), .groups="drop") %>%
+            summarize(numStudents=sum(enrolledstudents), .groups="drop") %>%
             select("semester", "Students Enrolled" = "numStudents")
         }
 
