@@ -121,7 +121,8 @@ fullRegistrationTrackingExternalDBBoxModuleServer <- function(id, input, output,
       # possibleSubjects <- sort(unique(registrationDataBundle$outRegistrationTracking$fullRegistrationTracking$subject))
       possibleSubjects <- sort(unique(courseEnrollmentData$subject))
 
-      possibleSemesters <- sort(unique(registrationDataBundle$outRegistrationTracking$fullRegistrationTracking$semester))
+      #possibleSemesters <- sort(unique(registrationDataBundle$outRegistrationTracking$fullRegistrationTracking$semester))
+      possibleSemesters <- unique(courseEnrollmentData$semester)
       possibleSemesters <- as.numeric(possibleSemesters)
 
       possibleSemestersHistoric <- sort(unique(courseEnrollmentData$semester))
@@ -229,7 +230,8 @@ fullRegistrationTrackingExternalDBBoxModuleServer <- function(id, input, output,
         # if not, check to see if input$focalSemester is not null
         cat("Entering observeEvent for focalSemester\n")
         req(input$testInput3)
-        cat("Paste req(input$testInput3\n")
+        cat("Paste req(input$testInput3)\n")
+        #browser()
         if(!is.null(input$focalSemester)){
           if(is.null(fullRegistrationTracking$theData)){
             query <- paste0("SELECT * FROM t", input$focalSemester," WHERE subject = '", input$testInput3,"'")
@@ -278,7 +280,7 @@ fullRegistrationTrackingExternalDBBoxModuleServer <- function(id, input, output,
 
         req(input$referenceSemester)
         req(input$focalSemester)
-        browser()
+        #browser()
         if(!is.null(input$testInput3)){
           if(is.null(fullRegistrationTracking$theData)){
             query1 <- paste0("SELECT * FROM t", input$referenceSemester," WHERE subject = '", input$testInput3,"'")
